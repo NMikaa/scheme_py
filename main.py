@@ -1,16 +1,18 @@
-# This is a sample Python script.
+from lexer import Scheme_Lexer
+from scheme_parser import Parser
+from evaluator import *
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+scheme_code = """
+(define (factorial n) (if (= n 0) 1 (* n (factorial (- n 1))))); (factorial 5) 
+"""
+lexer = Scheme_Lexer()
+tokens = lexer.tokenize(scheme_code)
 
+parser_object = Parser(tokens)
+ast = parser_object.parse()
+print(ast[0])
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+for expression in ast:
+    # You might need to adjust, depending on your AST output
+    result = evaluate(expression)
+    print(result)
