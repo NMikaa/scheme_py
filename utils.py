@@ -3,40 +3,50 @@ Number = (int, float)
 Atom = (Symbol, Number)
 List = list
 
+
 def tokenize(chars: str):
-    "Convert a string of characters into a list of tokens."
     return chars.replace('(', ' ( ').replace(')', ' ) ').split()
-def read_from_tokens(tokens: list):
-    "Read an expression from a sequence of tokens."
+
+
+def read_from_tokens(tokens):
     if len(tokens) == 0:
-        raise SyntaxError('Unexpected EOF')
+        raise SyntaxError("unexpected EOF while reading")
     token = tokens.pop(0)
     if token == '(':
         L = []
         while tokens[0] != ')':
             L.append(read_from_tokens(tokens))
-        tokens.pop(0) # pop off ')'
+        tokens.pop(0)
         return L
-    elif token == ')':
-        raise SyntaxError('unexpected )')
+    elif token == "'":
+        return ['quote', read_from_tokens(tokens)]
     else:
         return atom(token)
+
 
 def atom(token: str):
     try:
         return int(token)
     except ValueError:
-        try: return float(token)
+        try:
+            return float(token)
         except ValueError:
             return Symbol(token)
+
+
 def parse(code: str):
-    "Read a Scheme expression from a string."
     return read_from_tokens(tokenize(code))
 
 
+class SchemeEnvironment(dict):
+    def __init__(self, parameters=(), arguments=(), outer=None):
+        self.update(zip(parameters, arguments))
+        self.outer = outer
 
-
-if __name__ == '__main__':
-    code = "(define sum (lambda (x y) (+ x y)))"
-    tokens = parse(code)
-    print(tokens)
+    def find(self, variable):
+        if variable in self:
+            return self
+        elif self.outer is not None:
+            return self.outer.find(variable)
+        else:
+            raise KeyError(f"Variable '{variable}' not found in environment")
