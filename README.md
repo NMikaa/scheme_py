@@ -19,7 +19,7 @@ This project is a Scheme interpreter implemented in Python. It is designed to em
 - also, for satisfying the requirements you can run ```pip install -r requirements.txt``` in your terminal
 ## Getting Started
 you can just clone the repository, go to your terminal, and run the file like this:
-NOTE! THERE ARE EXACTLY TWO VARIABLES IN MAIN. 
+**NOTE! THERE ARE EXACTLY TWO VARIABLES IN MAIN.** 
 - **FIRST**: ```--file_path```. If you want to run my Scheme interpreter on your tests, your tests should be separated each on one line and should be written in .txt file. (for example, visit lunar_test.txt). Using this variable is not required, therefore you can ignore it.
 - **SECOND**: ```--repl```. If you want to run my Scheme interpreter and play with it, you can just pass this argument by itself, it is a boolean type so if you pass it you can just enter the KAWA WORLD!
 ### EXAMPLE USAGES!
