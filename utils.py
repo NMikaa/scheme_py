@@ -80,7 +80,6 @@ def scheme_append(*args):
 
 
 def add(*args):
-    print(args)
     return sum(args)
 
 
