@@ -128,9 +128,9 @@ class Evaluator:
             test = input(prompt)
             if test is not None:
                 result = self.run_evaluator(test)
-                if result:
+                if result == True:
                     print("#t")
-                elif not result:
+                elif result == False:
                     print("#f")
                 elif result is not None:
                     print(result)
