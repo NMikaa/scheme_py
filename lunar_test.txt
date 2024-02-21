@@ -1,0 +1,6 @@
+(define (lunar_addition a b) (if (and (= (remainder a 10) 0) (= (remainder b 10) 0)) (max a b) (+ (max (remainder a 10) (remainder b 10))  (* 10 (lunar_addition (/ (- a (remainder a 10)) 10) (/(- b (remainder b 10)) 10)) ) )))
+(display (if (equal? (lunar_addition 1 7) 7) "1 SUCCESS" "1 FAILURE"))
+(display (if (equal? (lunar_addition 95 7123241128) 7123241198) "2 SUCCESS" "2 FAILURE"))
+(display (if (equal? (lunar_addition 357 64) 367) "3 SUCCESS" "3 FAILURE"))
+(display (if (equal? (lunar_addition 431 50902)  50932) "4 SUCCESS" "4 FAILURE"))
+(display (if (equal? (lunar_addition 62745281910 463628366)  62765688966) "5 SUCCESS" "5 FAILURE"))
