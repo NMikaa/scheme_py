@@ -1,5 +1,6 @@
+import math
+import operator as op
 from utils import *
-import math, operator as op
 
 
 class Evaluator:
@@ -18,24 +19,19 @@ class Evaluator:
 
     @staticmethod
     def standard_environment():
-        def scheme_append(*args):
-            result = []
-            for arg in args:
-                result.extend(arg)
-            return result
-
         env = SchemeEnvironment()
         env.update(vars(math))
         env.update({
-            '+': op.add, '-': op.sub, '*': op.mul, '/': op.truediv,
+            'remainder': remainder,
+            '+': add, '-': subtract, '*': multiply, '/': divide,
             '>': op.gt, '<': op.lt, '>=': op.ge, '<=': op.le, '=': op.eq,
             'abs': abs, 'append': scheme_append, "or": op.or_, "and": op.and_,
-            'apply': lambda proc, args: proc(*args),
             'car': lambda x: x[0], 'cdr': lambda x: x[1:], 'cons': lambda x, y: [x] + y,
             'list': lambda *x: list(x), 'list?': lambda x: isinstance(x, list),
             'map': lambda func, lst: list(map(func, lst)), 'max': max, 'min': min, 'null?': lambda x: x == [],
-            'number?': lambda x: isinstance(x, (int, float)), 'print': print,
-            'round': round, 'symbol?': lambda x: isinstance(x, str),
+            'number?': lambda x: isinstance(x, (int, float)),
+            'round': round, 'symbol?': lambda x: isinstance(x, str), 'equal?': lambda x, y: x == y, 'display': print,
+            'length': lambda x: len(x)
         })
         return env
 
@@ -54,14 +50,32 @@ class Evaluator:
         return self.create_lambda(params, body, env)
 
     def handle_if(self, expression, env):
-        test = expression[1]
+        condition = expression[1]
         conseq = expression[2]
         alt = expression[3] if len(expression) > 3 else None
-        return self.evaluate(conseq if self.evaluate(test, env) else alt, env)
+        return self.evaluate(conseq if self.evaluate(condition, env) else alt, env)
 
     def handle_set(self, expression, env):
         (_, var, exp) = expression
         env.find(var)[var] = self.evaluate(exp, env)
+
+    def handle_eval(self, expression, env):
+        inner_expression = self.evaluate(expression[1], env)
+        return self.evaluate(inner_expression, env)
+
+    def handle_apply(self, expression, env):
+        function = self.evaluate(expression[1], env)
+
+        args_expr = expression[2]
+        if args_expr[0] == "quote":
+            args = args_expr[1]
+        else:
+            args = self.evaluate(args_expr, env)
+
+        if isinstance(args, list):
+            return function(*args)
+        else:
+            return function(args)
 
     @staticmethod
     def handle_bool_list_str(expression, env):
@@ -69,8 +83,12 @@ class Evaluator:
             return True
         elif expression == "#f":
             return False
-        elif isinstance(expression, str):
+        elif isinstance(expression, str) and not expression.startswith('"'):
+            # It's a symbol, so look it up in the environment.
             return env.find(expression)[expression]
+        elif isinstance(expression, str):
+            # It's a string literal. Remove the quotes and return the string itself.
+            return expression.strip('"')
         elif not isinstance(expression, list):
             return expression
         else:
@@ -86,8 +104,11 @@ class Evaluator:
             "if": lambda exp: self.handle_if(exp, env),
             "define": lambda exp: self.handle_define(exp, env),
             "lambda": lambda exp: self.handle_lambda(exp, env),
-            "set!": lambda exp: self.handle_set(exp, env)
+            "set!": lambda exp: self.handle_set(exp, env),
+            "eval": lambda exp: self.handle_eval(exp, env),
+            'apply': lambda exp: self.handle_apply(exp, env)
         }
+
         if operator in expr_handlers:
             return expr_handlers[operator](expression)
         else:
@@ -99,18 +120,18 @@ class Evaluator:
         parsed_test = parse(test)
         return self.evaluate(parsed_test, self.global_env)
 
-    def repl(self, prompt='lis.py> '):
+    def repl(self):
         """A prompt-read-eval-print loop."""
+        cnt = 1
         while True:
+            prompt = f'#|kawa:{cnt}|#:'
             test = input(prompt)
             if test is not None:
-                print(self.run_evaluator(test))
-
-
-if __name__ == '__main__':
-    list_of_tests = [
-        '''(define (fib n) (if (or (= n 2) (= n 1)) 1 (+ (fib (- n 1)) (fib (- n 2)))))''',
-        "(fib 6)",
-    ]
-    Evaluator_object = Evaluator()
-    Evaluator_object.repl()
+                result = self.run_evaluator(test)
+                if result:
+                    print("#t")
+                elif not result:
+                    print("#f")
+                elif result is not None:
+                    print(result)
+            cnt += 1
