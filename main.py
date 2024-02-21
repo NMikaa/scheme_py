@@ -1,18 +1,20 @@
-from lexer import Scheme_Lexer
-from scheme_parser import Parser
-from evaluator import *
+import click
+from evaluator import Evaluator
+from utils import *
 
-scheme_code = """
-(define (factorial n) (if (= n 0) 1 (* n (factorial (- n 1))))); (factorial 5) 
-"""
-lexer = Scheme_Lexer()
-tokens = lexer.tokenize(scheme_code)
+@click.command()
+@click.option(
+        "--file_path",
+        required = False,
+        type = str,
+        help = "path where the tests are stored"
+)
+def main(file_path : str):
+    eval = Evaluator()
+    with open(file_path, 'r', encoding = 'utf-8') as f:
+        for line in f:
+            print(eval.run_evaluator(line))
 
-parser_object = Parser(tokens)
-ast = parser_object.parse()
-print(ast[0])
 
-for expression in ast:
-    # You might need to adjust, depending on your AST output
-    result = evaluate(expression)
-    print(result)
+if __name__ == '__main__':
+    main()
